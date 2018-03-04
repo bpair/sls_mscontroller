@@ -245,24 +245,24 @@ Resources:
           - Effect: Allow
             Principal:
               AWS:
-                - 'Fn::Join':
-                    - ''
-                    - - 'arn:aws:iam:'
-                      - Ref: 'AWS::Region'
-                      - ':'
-                      - Ref: 'AWS::AccountId'
-                      - ':root'
-            Action: 'es:*'
-            Resource:
-              - 'Fn::Join':
+                'Fn::Join':
                   - ''
-                  - - 'arn:aws:es:'
+                  - - 'arn:aws:iam:'
                     - Ref: 'AWS::Region'
                     - ':'
                     - Ref: 'AWS::AccountId'
-                    - ':domain:ms_'
-                    - Ref: EnvPrefix
-                    - /*
+                    - ':root'
+            Action: 'es:*'
+            Resource:
+              'Fn::Join':
+                - ''
+                - - 'arn:aws:es:'
+                  - Ref: 'AWS::Region'
+                  - ':'
+                  - Ref: 'AWS::AccountId'
+                  - ':domain:ms_'
+                  - Ref: EnvPrefix
+                  - /*
       AdvancedOptions:
         rest.action.multi.allow_explicit_index: 'true'
   InboundEvent:
