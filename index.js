@@ -4,7 +4,7 @@
 
 var utils = require("lib/msgHandlers.js");
 
-module.exports.inboundIntegration = function (event, context, cb) {
+module.exports.inboundIntegrationEvent = function (event, context, cb) {
     console.info("Event Object: " + JSON.stringify(event, null, utils.JSON_STRINGIFY_SPACING));
     // console.info("Context Object: " + JSON.stringify(context, null, JSON_STRINGIFY_SPACING));
     utils.handleInboundEvent(event, context)
@@ -30,7 +30,7 @@ module.exports.inboundIntegration = function (event, context, cb) {
 exports.inboundIntegration = (event, context, callback) => {
     console.log('event: ' + JSON.stringify(event));
     console.log('context: ' + JSON.stringify(context));
-    handleInboundIntegration(event);
+    utils.handleInboundEvent(event);
     callback(null, 'Hello from Lambda');
 };
 

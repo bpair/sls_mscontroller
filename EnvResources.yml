@@ -268,7 +268,7 @@ Resources:
   InboundEvent:
     Type: 'AWS::Serverless::Function'
     Properties:
-      Handler: index.inboundIntegration
+      Handler: index.inboundIntegrationEvent
       FunctionName:
         'Fn::Join':
           - ''
