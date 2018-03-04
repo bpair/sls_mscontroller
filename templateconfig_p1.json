@@ -1,0 +1,7 @@
+{
+    "Parameters": {
+        "EnvPrefix": "prod"
+    },
+    "Tags": {},
+    "StackPolicy": {}
+}

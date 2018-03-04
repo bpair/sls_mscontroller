@@ -1,0 +1,338 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform:
+  - 'AWS::Serverless-2016-10-31'
+Parameters:
+  EnvPrefix:
+    Type: String
+    Description: Environment code used to prefix tables and function aliases
+Globals:
+  Function:
+    Runtime: nodejs6.10
+    Timeout: 30
+    AutoPublishAlias:
+      Ref: EnvPrefix
+    Environment:
+      Variables:
+        TABLE_PREFIX:
+          'Fn::Join':
+            - ''
+            - - Ref: EnvPrefix
+              - _
+        TOPIC_PREFIX:
+          Ref: EnvPrefix
+        env:
+          Ref: EnvPrefix
+        envPrefix:
+          Ref: EnvPrefix
+Resources:
+  iotdlq:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      MessageRetentionPeriod: 604800
+      QueueName:
+        'Fn::Join':
+          - ''
+          - - Ref: EnvPrefix
+            - _dlq
+  iotmsg:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      DelaySeconds: 30
+      MessageRetentionPeriod: 604800
+      QueueName:
+        'Fn::Join':
+          - ''
+          - - Ref: EnvPrefix
+            - _asset_out
+      ReceiveMessageWaitTimeSeconds: 20
+      RedrivePolicy:
+        deadLetterTargetArn:
+          'Fn::GetAtt':
+            - iotdlq
+            - Arn
+        maxReceiveCount: 5
+      VisibilityTimeout: 30
+  lambdaiot:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - iot.amazonaws.com
+                - lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName:
+            'Fn::Join':
+              - ''
+              - - Ref: EnvPrefix
+                - '-lambda-iot'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:DescribeLogGroups'
+                  - 'logs:DescribeLogStreams'
+                  - 'logs:PutLogEvents'
+                  - 'logs:PutMetricFilter'
+                  - 'logs:PutRetentionPolicy'
+                  - 'logs:GetLogEvents'
+                Resource: 'arn:aws:logs:*:*:*'
+              - Effect: Allow
+                Action:
+                  - 'dynamodb:PutItem'
+                  - 'dynamodb:UpdateItem'
+                  - 'dynamodb:GetRecords'
+                  - 'dynamodb:GetShardIterator'
+                  - 'dynamodb:DescribeStream'
+                  - 'dynamodb:ListStreams'
+                  - 'dynamodb:BatchGetItem'
+                  - 'dynamodb:GetItem'
+                  - 'dynamodb:Query'
+                  - 'dynamodb:Scan'
+                Resource:
+                  - 'Fn::Join':
+                      - ''
+                      - - 'arn:aws:dynamodb:'
+                        - Ref: 'AWS::Region'
+                        - ':'
+                        - Ref: 'AWS::AccountId'
+                        - ':table/'
+                        - Ref: EnvPrefix
+                        - '*'
+              - Effect: Allow
+                Action:
+                  - 'lambda:InvokeFunction'
+                Resource:
+                  - 'Fn::Join':
+                      - ''
+                      - - 'arn:aws:lambda:'
+                        - Ref: 'AWS::Region'
+                        - ':'
+                        - Ref: 'AWS::AccountId'
+                        - ':function:iot-'
+                        - Ref: EnvPrefix
+                        - _*
+                  - 'Fn::Join':
+                      - ''
+                      - - 'arn:aws:lambda:'
+                        - Ref: 'AWS::Region'
+                        - ':'
+                        - Ref: 'AWS::AccountId'
+                        - ':function:iot-'
+                        - Ref: EnvPrefix
+                        - '*'
+              - Effect: Allow
+                Action:
+                  - 'iot:Connect'
+                  - 'iot:Publish'
+                  - 'iot:Subscribe'
+                  - 'iot:Receive'
+                Resource:
+                  'Fn::Join':
+                    - ''
+                    - - 'arn:aws:iot:'
+                      - Ref: 'AWS::Region'
+                      - ':'
+                      - Ref: 'AWS::AccountId'
+                      - ':topic/'
+                      - Ref: EnvPrefix
+                      - /*
+              - Effect: Allow
+                Action:
+                  - 'iot:GetThingShadow'
+                  - 'iot:UpdateThingShadow'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 'sns:Publish'
+                Resource:
+                  - '*'
+              - Effect: Allow
+                Action:
+                  - 'sqs:SendMessage'
+                Resource:
+                  - '*'
+      RoleName:
+        'Fn::Join':
+          - ''
+          - - Ref: EnvPrefix
+            - '-lambda-iot'
+  iot2es:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - iot.amazonaws.com
+                - lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName:
+            'Fn::Join':
+              - ''
+              - - Ref: EnvPrefix
+                - '-iot2es'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              Effect: Allow
+              Action: 'es:*'
+              Resource:
+                - 'Fn::Join':
+                    - ''
+                    - - 'arn:aws:es:'
+                      - Ref: 'AWS::Region'
+                      - ':'
+                      - Ref: 'AWS::AccountId'
+                      - ':domain:'
+                      - Ref: EnvPrefix
+                      - /*
+      RoleName:
+        'Fn::Join':
+          - ''
+          - - Ref: EnvPrefix
+            - '-iot2es'
+  integrationTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: key
+          AttributeType: S
+      KeySchema:
+        - AttributeName: key
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 3
+        WriteCapacityUnits: 3
+      TableName:
+        'Fn::Join':
+          - ''
+          - - Ref: EnvPrefix
+            - _Integration
+ElasticsearchDomain:
+  Type: 'AWS::Elasticsearch::Domain'
+  Properties:
+    DomainName: MSController
+    ElasticsearchClusterConfig:
+      DedicatedMasterEnabled: 'false'
+      InstanceCount: '1'
+      ZoneAwarenessEnabled: 'false'
+      InstanceType: t2.small.elasticsearch
+    EBSOptions:
+      EBSEnabled: true
+      Iops: 0
+      VolumeSize: 10
+      VolumeType: gp2
+    SnapshotOptions:
+      AutomatedSnapshotStartHour: '0'
+    AccessPolicies:
+      Version: '2012-10-17'
+      Statement:
+        - Effect: Allow
+          Principal:
+            AWS:
+              - 'Fn::Join':
+                  - ''
+                  - - 'arn:aws:iam:'
+                    - Ref: 'AWS::Region'
+                    - ':'
+                    - Ref: 'AWS::AccountId'
+                    - ':root'
+          Action: 'es:*'
+          Resource:
+            - 'Fn::Join':
+                - ''
+                - - 'arn:aws:es:'
+                  - Ref: 'AWS::Region'
+                  - ':'
+                  - Ref: 'AWS::AccountId'
+                  - ':domain:'
+                  - Ref: EnvPrefix
+                  - /*
+    AdvancedOptions:
+      rest.action.multi.allow_explicit_index: 'true'
+  InboundEvent:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: index.inboundIntegration
+      FunctionName:
+        'Fn::Join':
+          - ''
+          - - iot-
+            - Ref: EnvPrefix
+            - '-MsgLogEvent'
+      Role:
+        'Fn::GetAtt':
+          - lambdaiot
+          - Arn
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn:
+          'Fn::GetAtt':
+            - iotmsg
+            - Arn
+      Events:
+        IoT:
+          Type: IoTRule
+          Properties:
+            AwsIotSqlVersion: '2016-03-23'
+            Sql:
+              'Fn::Join':
+                - ''
+                - - 'SELECT *, topic() AS topic, clientId() AS clientId, '
+                  - 'principal() AS principal, timestamp() as brkrTmstamp FROM '''
+                  - Ref: EnvPrefix
+                  - '/#'''
+  TelemetryEvent:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: index.telemetryEvent
+      FunctionName:
+        'Fn::Join':
+          - ''
+          - - iot-
+            - Ref: EnvPrefix
+            - '-TelemetryEvent'
+      Role:
+        'Fn::GetAtt':
+          - iot2es
+          - Arn
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn:
+          'Fn::GetAtt':
+            - iotmsg
+            - Arn
+      Events:
+        IoT:
+          Type: IoTRule
+          Properties:
+            AwsIotSqlVersion: '2016-03-23'
+            Sql:
+              'Fn::Join':
+                - ''
+                - - 'SELECT *, topic() AS topic, clientId() AS clientId, '
+                  - 'principal() AS principal, timestamp() as brkrTmstamp FROM '''
+                  - Ref: EnvPrefix
+                  - /+/+/out/tel'
+        IoT2:
+          Type: IoTRule
+          Properties:
+            AwsIotSqlVersion: '2016-03-23'
+            Sql:
+              'Fn::Join':
+                - ''
+                - - 'SELECT *, topic() AS topic, clientId() AS clientId, '
+                  - 'principal() AS principal, timestamp() as brkrTmstamp FROM '''
+                  - Ref: EnvPrefix
+                  - '/+/+/out/tel/#'''

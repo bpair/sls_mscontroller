@@ -1,0 +1,7 @@
+{
+    "Parameters": {
+        "EnvPrefix": "dev"
+    },
+    "Tags": {},
+    "StackPolicy": {}
+}
