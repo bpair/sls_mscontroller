@@ -26,11 +26,11 @@ phases:
       - echo "Create and copy cloud formation package"
       - >-
         aws cloudformation package --template EnvResources.yml --s3-bucket
-        $S3_BUCKET --output-template template-export.yml
+        $S3_BUCKET --output-template cf-template-export.yml
       - echo "Copy template config files"
       - |
         for conf in $CONFIG_FILES; do
-          aws s3 cp $conf s3://$S3_BUCKET/conf/$conf
+          aws s3 cp $conf s3://$S3_BUCKET/$conf
         done
 artifacts:
   type: zip
