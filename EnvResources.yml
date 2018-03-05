@@ -223,7 +223,6 @@ Resources:
     Type: 'AWS::Serverless::Function'
     Properties:
       Handler: index.inboundIntegrationEvent
-      CodeUri: ./sls_mscontroller
       FunctionName:
         'Fn::Join':
           - ''
@@ -256,7 +255,6 @@ Resources:
     Type: 'AWS::Serverless::Function'
     Properties:
       Handler: index.telemetryEvent
-      CodeUri: ./sls_mscontroller
       FunctionName:
         'Fn::Join':
           - ''
