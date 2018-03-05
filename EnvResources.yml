@@ -219,6 +219,81 @@ Resources:
           - ''
           - - Ref: EnvPrefix
             - _Integration
+  InboundEvent:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: index.inboundIntegrationEvent
+      FunctionName:
+        'Fn::Join':
+          - ''
+          - - iot-
+            - Ref: EnvPrefix
+            - '-MsgLogEvent'
+      Role:
+        'Fn::GetAtt':
+          - lambdaiot
+          - Arn
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn:
+          'Fn::GetAtt':
+            - iotmsg
+            - Arn
+      Events:
+        IoT:
+          Type: IoTRule
+          Properties:
+            AwsIotSqlVersion: '2016-03-23'
+            Sql:
+              'Fn::Join':
+                - ''
+                - - 'SELECT *, topic() AS topic, clientId() AS clientId, '
+                  - 'principal() AS principal, timestamp() as brkrTmstamp FROM '''
+                  - Ref: EnvPrefix
+                  - '/#'''
+  TelemetryEvent:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: index.telemetryEvent
+      FunctionName:
+        'Fn::Join':
+          - ''
+          - - iot-
+            - Ref: EnvPrefix
+            - '-TelemetryEvent'
+      Role:
+        'Fn::GetAtt':
+          - iot2es
+          - Arn
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn:
+          'Fn::GetAtt':
+            - iotmsg
+            - Arn
+      Events:
+        IoT:
+          Type: IoTRule
+          Properties:
+            AwsIotSqlVersion: '2016-03-23'
+            Sql:
+              'Fn::Join':
+                - ''
+                - - 'SELECT *, topic() AS topic, clientId() AS clientId, '
+                  - 'principal() AS principal, timestamp() as brkrTmstamp FROM '''
+                  - Ref: EnvPrefix
+                  - /+/+/out/tel'
+        IoT2:
+          Type: IoTRule
+          Properties:
+            AwsIotSqlVersion: '2016-03-23'
+            Sql:
+              'Fn::Join':
+                - ''
+                - - 'SELECT *, topic() AS topic, clientId() AS clientId, '
+                  - 'principal() AS principal, timestamp() as brkrTmstamp FROM '''
+                  - Ref: EnvPrefix
+                  - '/+/+/out/tel/#'''
   ElasticsearchDomain:
     Type: 'AWS::Elasticsearch::Domain'
     Properties:
@@ -265,80 +340,3 @@ Resources:
                   - /*
       AdvancedOptions:
         rest.action.multi.allow_explicit_index: 'true'
-  InboundEvent:
-    Type: 'AWS::Serverless::Function'
-    Properties:
-      Handler: index.inboundIntegrationEvent
-      CodeUri: .
-      FunctionName:
-        'Fn::Join':
-          - ''
-          - - iot-
-            - Ref: EnvPrefix
-            - '-MsgLogEvent'
-      Role:
-        'Fn::GetAtt':
-          - lambdaiot
-          - Arn
-      DeadLetterQueue:
-        Type: SQS
-        TargetArn:
-          'Fn::GetAtt':
-            - iotmsg
-            - Arn
-      Events:
-        IoT:
-          Type: IoTRule
-          Properties:
-            AwsIotSqlVersion: '2016-03-23'
-            Sql:
-              'Fn::Join':
-                - ''
-                - - 'SELECT *, topic() AS topic, clientId() AS clientId, '
-                  - 'principal() AS principal, timestamp() as brkrTmstamp FROM '''
-                  - Ref: EnvPrefix
-                  - '/#'''
-  TelemetryEvent:
-    Type: 'AWS::Serverless::Function'
-    Properties:
-      Handler: index.telemetryEvent
-      CodeUri: .
-      FunctionName:
-        'Fn::Join':
-          - ''
-          - - iot-
-            - Ref: EnvPrefix
-            - '-TelemetryEvent'
-      Role:
-        'Fn::GetAtt':
-          - iot2es
-          - Arn
-      DeadLetterQueue:
-        Type: SQS
-        TargetArn:
-          'Fn::GetAtt':
-            - iotmsg
-            - Arn
-      Events:
-        IoT:
-          Type: IoTRule
-          Properties:
-            AwsIotSqlVersion: '2016-03-23'
-            Sql:
-              'Fn::Join':
-                - ''
-                - - 'SELECT *, topic() AS topic, clientId() AS clientId, '
-                  - 'principal() AS principal, timestamp() as brkrTmstamp FROM '''
-                  - Ref: EnvPrefix
-                  - /+/+/out/tel'
-        IoT2:
-          Type: IoTRule
-          Properties:
-            AwsIotSqlVersion: '2016-03-23'
-            Sql:
-              'Fn::Join':
-                - ''
-                - - 'SELECT *, topic() AS topic, clientId() AS clientId, '
-                  - 'principal() AS principal, timestamp() as brkrTmstamp FROM '''
-                  - Ref: EnvPrefix
-                  - '/+/+/out/tel/#'''
