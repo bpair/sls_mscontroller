@@ -298,10 +298,10 @@ Resources:
     Type: 'AWS::Elasticsearch::Domain'
     Properties:
       DomainName:
-        - 'Fn::Join':
-            - ''
-            - - ms_
-              - Ref: 'AWS::Region'
+        'Fn::Join':
+          - ''
+          - - ms_
+            - Ref: 'AWS::Region'
       ElasticsearchClusterConfig:
         DedicatedMasterEnabled: 'false'
         InstanceCount: '1'
