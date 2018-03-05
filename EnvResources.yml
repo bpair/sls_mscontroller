@@ -335,7 +335,7 @@ Resources:
                   - Ref: 'AWS::Region'
                   - ':'
                   - Ref: 'AWS::AccountId'
-                  - ':domain:ms-'
+                  - ':domain/ms-'
                   - Ref: EnvPrefix
                   - /*
       AdvancedOptions:
