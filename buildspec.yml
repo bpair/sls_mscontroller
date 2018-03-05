@@ -25,8 +25,8 @@ phases:
     commands:
       - echo "Create and copy cloud formation package"
       - >-
-        aws cloudformation package --template file://EnvResources.yml 
-        --s3-bucket $S3_BUCKET --output-template template-export.yml
+        aws cloudformation package --template EnvResources2.yml --s3-bucket
+        $S3_BUCKET --output-template template-export.yml
       - echo "Copy template config files"
       - |
         for conf in $CONFIG_FILES; do
