@@ -185,18 +185,28 @@ Resources:
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
-              Effect: Allow
-              Action: 'es:*'
-              Resource:
-                - 'Fn::Join':
-                    - ''
-                    - - 'arn:aws:es:'
-                      - Ref: 'AWS::Region'
-                      - ':'
-                      - Ref: 'AWS::AccountId'
-                      - ':domain:'
-                      - Ref: EnvPrefix
-                      - /*
+              - Effect: Allow
+                Action: 'es:*'
+                Resource:
+                  - 'Fn::Join':
+                      - ''
+                      - - 'arn:aws:es:'
+                        - Ref: 'AWS::Region'
+                        - ':'
+                        - Ref: 'AWS::AccountId'
+                        - ':domain:'
+                        - Ref: EnvPrefix
+                        - /*
+              - Effect: Allow
+                Action:
+                  - 'sns:Publish'
+                Resource:
+                  - '*'
+              - Effect: Allow
+                Action:
+                  - 'sqs:SendMessage'
+                Resource:
+                  - '*'
       RoleName:
         'Fn::Join':
           - ''
