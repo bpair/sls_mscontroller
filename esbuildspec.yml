@@ -1,0 +1,33 @@
+version: 0.2
+environment_variables:
+  TEMPLATE_FILES: |
+    ESResources.yml
+  CONFIG_FILES: |
+    templateconfig_d1.json
+phases:
+  install:
+    commands:
+      - echo Build Install
+      - printenv
+  pre_build:
+    commands:
+      - echo "Validating CFN templates"
+      - >-
+        aws cloudformation validate-template --template-body
+        file://ESResources.yml
+      - |
+        for conf in $CONFIG_FILES; do
+          echo "Validating CFN parameters config file $conf"
+          jsonlint -q $conf
+        done
+  build:
+    commands:
+      - echo "Create and copy cloud formation package"
+      - >-
+        aws cloudformation package --template ESResources.yml --s3-bucket
+        $S3_BUCKET --output-template es-template-export.yml
+      - echo "Copy template config files"
+artifacts:
+  type: zip
+  files:
+    - es-template-export.yml

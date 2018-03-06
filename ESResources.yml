@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform:
+  - 'AWS::Serverless-2016-10-31'
+Parameters:
+  EnvPrefix:
+    Type: String
+    Description: Environment code used to prefix tables and function aliases
+Globals:
+  Function:
+    Runtime: nodejs6.10
+    Timeout: 30
+    AutoPublishAlias:
+      Ref: EnvPrefix
+    Environment:
+      Variables:
+        TABLE_PREFIX:
+          'Fn::Join':
+            - ''
+            - - Ref: EnvPrefix
+              - _
+        TOPIC_PREFIX:
+          Ref: EnvPrefix
+        env:
+          Ref: EnvPrefix
+        envPrefix:
+          Ref: EnvPrefix
+Resources:
+  ElasticsearchDomain:
+    Type: 'AWS::Elasticsearch::Domain'
+    Properties:
+      DomainName:
+        'Fn::Join':
+          - ''
+          - - ms-
+            - Ref: EnvPrefix
+      ElasticsearchClusterConfig:
+        DedicatedMasterEnabled: 'false'
+        InstanceCount: '1'
+        ZoneAwarenessEnabled: 'false'
+        InstanceType: t2.small.elasticsearch
+      EBSOptions:
+        EBSEnabled: true
+        Iops: 0
+        VolumeSize: 10
+        VolumeType: gp2
+      SnapshotOptions:
+        AutomatedSnapshotStartHour: '0'
+      AccessPolicies:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS:
+                'Fn::Join':
+                  - ''
+                  - - 'arn:aws:iam:'
+                    - Ref: 'AWS::Region'
+                    - ':'
+                    - Ref: 'AWS::AccountId'
+                    - ':role/MSControllerWebClient'
+            Action: 'es:*'
+            Resource:
+              'Fn::Join':
+                - ''
+                - - 'arn:aws:es:'
+                  - Ref: 'AWS::Region'
+                  - ':'
+                  - Ref: 'AWS::AccountId'
+                  - ':domain/*'
+      AdvancedOptions:
+        rest.action.multi.allow_explicit_index: 'true'
