@@ -18,12 +18,17 @@ Globals:
             - ''
             - - Ref: EnvPrefix
               - _
-        TOPIC_PREFIX:
-          Ref: EnvPrefix
         env:
           Ref: EnvPrefix
-        envPrefix:
-          Ref: EnvPrefix
+        AWS_REGION:
+          Ref: 'AWS::Region'
+        ES_REGION:
+          Ref: 'AWS::Region'
+        DB_ENDPOINT:
+          'Fn::Join':
+            - 'https://dynamodb.'
+            - - Ref: 'AWS::Region'
+              - .amazonaws.com
 Resources:
   iotdlq:
     Type: 'AWS::SQS::Queue'
