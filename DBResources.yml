@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform:
+  - 'AWS::Serverless-2016-10-31'
+Parameters:
+  EnvPrefix:
+    Type: String
+    Description: Environment code used to prefix tables and function aliases
+Globals:
+  Function:
+    Runtime: nodejs6.10
+    Timeout: 30
+    AutoPublishAlias:
+      Ref: EnvPrefix
+    Environment:
+      Variables:
+        TABLE_PREFIX:
+          'Fn::Join':
+            - ''
+            - - Ref: EnvPrefix
+              - _
+        TOPIC_PREFIX:
+          Ref: EnvPrefix
+        env:
+          Ref: EnvPrefix
+        envPrefix:
+          Ref: EnvPrefix
+Resources:
+  integrationTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: key
+          AttributeType: S
+      KeySchema:
+        - AttributeName: key
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 3
+        WriteCapacityUnits: 3
+      TableName:
+        'Fn::Join':
+          - ''
+          - - Ref: EnvPrefix
+            - _Integration
