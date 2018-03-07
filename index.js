@@ -60,6 +60,6 @@ module.exports.telemetryEvent = function (event, context, cb) {
 exports.telemetry = (event, context, callback) => {
     console.log('event: ' + JSON.stringify(event));
     console.log('context: ' + JSON.stringify(context));
-    handleTelemetryEvent(event);
+    utils.handleTelemetryEvent(event);
     callback(null, 'Hello from Lambda');
 };
