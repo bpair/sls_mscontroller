@@ -260,7 +260,7 @@ Resources:
                 - - 'SELECT *, topic() AS topic, clientId() AS clientId, '
                   - 'principal() AS principal, timestamp() as brkrTmstamp FROM '''
                   - Ref: EnvPrefix
-                  - '/#'''
+                  - /+/in'
   TelemetryEvent:
     Type: 'AWS::Serverless::Function'
     Properties:
@@ -292,15 +292,4 @@ Resources:
                 - - 'SELECT *, topic() AS topic, clientId() AS clientId, '
                   - 'principal() AS principal, timestamp() as brkrTmstamp FROM '''
                   - Ref: EnvPrefix
-                  - /+/+/out/tel'
-        IoT2:
-          Type: IoTRule
-          Properties:
-            AwsIotSqlVersion: '2016-03-23'
-            Sql:
-              'Fn::Join':
-                - ''
-                - - 'SELECT *, topic() AS topic, clientId() AS clientId, '
-                  - 'principal() AS principal, timestamp() as brkrTmstamp FROM '''
-                  - Ref: EnvPrefix
-                  - '/+/+/out/tel/#'''
+                  - /+/out/tel'
