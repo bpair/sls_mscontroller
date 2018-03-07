@@ -260,7 +260,7 @@ Resources:
                 - - 'SELECT *, topic() AS topic, clientId() AS clientId, '
                   - 'principal() AS principal, timestamp() as brkrTmstamp FROM '''
                   - Ref: EnvPrefix
-                  - /+/in'
+                  - /+/out'
   TelemetryEvent:
     Type: 'AWS::Serverless::Function'
     Properties:
@@ -290,6 +290,8 @@ Resources:
               'Fn::Join':
                 - ''
                 - - 'SELECT *, topic() AS topic, clientId() AS clientId, '
-                  - 'principal() AS principal, timestamp() as brkrTmstamp FROM '''
+                  - >-
+                    principal() AS principal, timestamp() as brkrTmstamp FROM
+                    'ms/
                   - Ref: EnvPrefix
-                  - /+/out/tel'
+                  - /+/tel'
