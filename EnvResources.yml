@@ -20,7 +20,7 @@ Globals:
               - _
         env:
           Ref: EnvPrefix
-        AWS_REGION:
+        REGION:
           Ref: 'AWS::Region'
         ES_REGION:
           Ref: 'AWS::Region'
