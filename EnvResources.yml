@@ -26,8 +26,9 @@ Globals:
           Ref: 'AWS::Region'
         DB_ENDPOINT:
           'Fn::Join':
-            - 'https://dynamodb.'
-            - - Ref: 'AWS::Region'
+            - ''
+            - - 'https://dynamodb.'
+              - Ref: 'AWS::Region'
               - .amazonaws.com
 Resources:
   iotdlq:
@@ -291,7 +292,7 @@ Resources:
                     principal() AS principal, timestamp() as brkrTmstamp FROM
                     'ms/
                   - Ref: EnvPrefix
-                  - /+/tel'
+                  - /+/out/tel'
   integrationTable:
     Type: 'AWS::DynamoDB::Table'
     Properties:
