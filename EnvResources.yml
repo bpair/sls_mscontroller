@@ -8,7 +8,8 @@ Parameters:
 Globals:
   Function:
     Runtime: nodejs6.10
-    Timeout: 30
+    MemorySize: 128
+    Timeout: 10
     AutoPublishAlias:
       Ref: EnvPrefix
     Environment:
