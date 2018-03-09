@@ -1,0 +1,10 @@
+{
+    "tm": 1520543881229,
+    "tmIso": "2018-03-08T21:18:01.229Z",
+    "gId": "JTW",
+    "raw": "0;255;3;0;9;80400068 TSM:READY:NWD REQ\n",
+    "topic": "dev/JTW/out",
+    "clientId": "mqtt_195d8455.e6a27c",
+    "principal": "0e4d5eddcf28f87e2ee4bb765edfb100c9301c2cd3bddc6a31da8c65d70fa14b",
+    "brkrTmstamp": 1520543881280
+}
