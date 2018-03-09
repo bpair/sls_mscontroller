@@ -289,9 +289,8 @@ Resources:
               'Fn::Join':
                 - ''
                 - - 'SELECT *, topic() AS topic, clientId() AS clientId, '
-                  - >-
-                    principal() AS principal, timestamp() as brkrTmstamp FROM
-                    'ms/
+                  - 'principal() AS principal, timestamp() as brkrTmstamp '
+                  - FROM 'ms/
                   - Ref: EnvPrefix
                   - /+/out/tel'
   integrationTable:
