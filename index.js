@@ -5,12 +5,9 @@
 var utils = require("lib/msgHandlers.js");
 
 module.exports.inboundIntegrationEvent = function (event, context, cb) {
-    console.info("Event Object: " + JSON.stringify(event, null, utils.JSON_STRINGIFY_SPACING));
-    // console.info("Context Object: " + JSON.stringify(context, null, JSON_STRINGIFY_SPACING));
-    Promise.resolve()
-        .then(function (data) {
-            return utils.handleInboundEvent(event, context);
-        })
+    console.info("Event Object: " + JSON.stringify(event, null, 4));
+    console.info("Context Object: " + JSON.stringify(context, null, 4));
+    utils.handleInboundEvent(event, context)
         .then(function (data) {
             cb(null, {
                 message: 'Inbound Event Handled',
@@ -40,10 +37,7 @@ exports.inboundIntegration = (event, context, callback) => {
 module.exports.telemetryEvent = function (event, context, cb) {
     console.info("Event Object: " + JSON.stringify(event, null, utils.JSON_STRINGIFY_SPACING));
     // console.info("Context Object: " + JSON.stringify(context, null, JSON_STRINGIFY_SPACING));
-    Promise.resolve()
-        .then(function (data) {
-            return utils.handleTelemetryEvent(event, context);
-        })
+    utils.handleTelemetryEvent(event, context)
         .then(function (data) {
             cb(null, {
                 message: 'Telemetry Event Handled',
