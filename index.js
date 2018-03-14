@@ -19,7 +19,7 @@ module.exports.inboundIntegrationEvent = function (event, context, cb) {
                 if (typeof err === 'string') {
                     cb(err);
                 } else {
-                    cb(JSON.stringify(err));
+                    cb(err.toString());
                 }
             } else {
                 cb("[InternalError] - Unspecified");
@@ -49,7 +49,7 @@ module.exports.telemetryEvent = function (event, context, cb) {
                 if (typeof err === 'string') {
                     cb(err);
                 } else {
-                    cb(JSON.stringify(err));
+                    cb(err.toString());
                 }
             } else {
                 cb("[InternalError] - Unspecified");
